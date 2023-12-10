@@ -18,9 +18,6 @@ def input_error(funk):
 
 @input_error
 def hello_handler(args):
-    if len(args) == 0:
-        print("There are no arguments")
-        return
     print("How can I help you?")
 
 
@@ -28,7 +25,7 @@ def hello_handler(args):
 def add_handler(args):
     if len(args) == 0:
         print("There are no arguments")
-        return
+
     name, phone = args.split()
     contacts[name] = phone
     print(f"Contact {name} with phone number {phone} added successfully.")
@@ -38,7 +35,7 @@ def add_handler(args):
 def change_handler(args):
     if len(args) == 0:
         print("There are no arguments")
-        return
+
     name, phone = args.split()
     if name in contacts:
         contacts[name] = phone
@@ -51,7 +48,7 @@ def change_handler(args):
 def phone_handler(args):
     if len(args) == 0:
         print("There are no arguments")
-        return
+
     if args in contacts:
         print(f"The phone number for {args} is {contacts[args]}.")
     else:
@@ -61,7 +58,7 @@ def phone_handler(args):
 def show_all_handler(args):
     if len(args) == 0:
         print("There are no arguments")
-        return
+
     if contacts:
         print("All contacts:")
         for name, phone in contacts.items():
@@ -82,10 +79,12 @@ def main():
         "hello": hello_handler,
         "phone": phone_handler,
         "show": show_all_handler,
-        "exit": exit_handler
+        "exit": exit_handler,
+        "close": exit_handler,
+        "good bye": exit_handler
     }
     while True:
-        user_input = input(">>> ")
+        user_input = input(">>> ").lower()
         first_name = user_input.find(" ")
         handler_name = user_input[:first_name]
         args = user_input[first_name:].strip()
@@ -93,6 +92,9 @@ def main():
         if table.get(handler_name) is not None:
             table[handler_name](args)
 
+        if handler_name in ["good bye", "close", "exit"]:
+            break
 
-if "__name__" == "__main__":
+
+if __name__ == "__main__":
     main()
