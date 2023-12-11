@@ -6,71 +6,72 @@ def input_error(funk):
             result = funk(*args, **kwargs)
             return result
         except KeyError as e:
-            print(f"KeyError: {e}")
+            return f"KeyError: {e}"
         except ValueError as e:
-            print(f"ValueError: {e}")
+            return f"ValueError: {e}"
         except IndexError as e:
-            print(f"IndexError: {e}")
+            return f"IndexError: {e}"
         except Exception as e:
-            print(f"Exception: {e}")
+            return f"Exception: {e}"
     return wrapper
 
 
 @input_error
 def hello_handler(args):
-    print("How can I help you?")
+    return "How can I help you?"
 
 
 @input_error
 def add_handler(args):
     if len(args) == 0:
-        print("There are no arguments")
+        return "There are no arguments"
 
     name, phone = args.split()
     contacts[name] = phone
-    print(f"Contact {name} with phone number {phone} added successfully.")
+    return f"Contact {name} with phone number {phone} added successfully."
 
 
 @input_error
 def change_handler(args):
     if len(args) == 0:
-        print("There are no arguments")
+        return "There are no arguments"
 
     name, phone = args.split()
     if name in contacts:
         contacts[name] = phone
-        print(f"Phone number for contact {name} changed to {phone}.")
+        return f"Phone number for contact {name} changed to {phone}."
     else:
-        print("Contact not found.")
+        return "Contact not found."
 
 
 @input_error
 def phone_handler(args):
     if len(args) == 0:
-        print("There are no arguments")
+        return "There are no arguments"
 
     if args in contacts:
-        print(f"The phone number for {args} is {contacts[args]}.")
+        return f"The phone number for {args} is {contacts[args]}."
     else:
-        print("Contact not found.")
+        return "Contact not found."
 
 @input_error
 def show_all_handler(args):
     if len(args) == 0:
-        print("There are no arguments")
+        return "There are no arguments"
 
     if contacts:
-        print("All contacts:")
+        result = "All contacts:\n"
         for name, phone in contacts.items():
-            print(f"{name}: {phone}")
+            result += f"{name}: {phone}\n"
+        return result
     else:
-        print("No contacts available.")
+        return "No contacts available."
 
 
 @input_error
 def exit_handler(args):
-    print("Good bye!")
-    quit()
+    return "Good bye!"
+
 
 def main():
     table = {
@@ -89,11 +90,15 @@ def main():
         handler_name = user_input[:first_name]
         args = user_input[first_name:].strip()
 
-        if table.get(handler_name) is not None:
-            table[handler_name](args)
+        if handler_name in table:
+            result = table[handler_name](args)
+            if result is not None:
+                if handler_name in ["good bye", "close", "exit"]:
+                    print(result)
+                    break
+                else:
+                    print(result)
 
-        if handler_name in ["good bye", "close", "exit"]:
-            break
 
 
 if __name__ == "__main__":
