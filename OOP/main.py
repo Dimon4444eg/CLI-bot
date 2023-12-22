@@ -79,13 +79,13 @@ class Record:
     def days_to_birthday(self):
         if self.birthday:
             today = datetime.now().date()
-            next_birthday = datetime(today.year, self.birthday.value.month, self.birthday.value.day).date()
+            birthday_date = datetime.strptime(self.birthday.value, '%Y-%m-%d').date().replace(year=today.year)
 
-            if next_birthday > today:
-                next_birthday = datetime(today.year + 1, self.birthday.value.month, self.birthday.value).date()
+            if birthday_date < today:
+                birthday_date = birthday_date.replace(year=today.year + 1)
 
-            day_left = (next_birthday - today)
-            return day_left
+            days_left = (birthday_date - today).days
+            return days_left
         else:
             return None
 
@@ -140,3 +140,5 @@ class AddressBook(UserDict):
 
     def find(self, name):
         return self.data.get(name, None)
+
+
