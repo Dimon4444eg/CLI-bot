@@ -1,12 +1,20 @@
 from collections import UserDict
-
+from datetime import datetime
 
 class Field:
     def __init__(self, value):
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
 
     def __str__(self):
-        return str(self.value)
+        return str(self._value)
 
 
 class Name(Field):
@@ -16,9 +24,13 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value):
         super().__init__(value)
-        if not self.validate_phone(value):
-            raise ValueError("Invalid phone number format")
         self.value = value
+
+    @Field.value.setter
+    def value(self, new_value):
+        if not self.validate_phone(new_value):
+            raise ValueError("Invalid phone number format")
+        self._value = new_value
 
     @staticmethod
     def validate_phone(phone):
@@ -26,9 +38,10 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name):
+    def __init__(self, name, birthday=None):
         self.name = Name(name)
         self.phones = []
+        self.birthday = Birthday(birthday) if birthday else None
 
     def add_phone(self, phone):
         if Phone.validate_phone(phone):
@@ -63,11 +76,58 @@ class Record:
         self.phones = [p for p in self.phones if p.value != phone]
         return "Phone number {phone} removed"
 
+    def days_to_birthday(self):
+        if self.birthday:
+            today = datetime.now().date()
+            next_birthday = datetime(today.year, self.birthday.value.month, self.birthday.value.day).date()
+
+            if next_birthday > today:
+                next_birthday = datetime(today.year + 1, self.birthday.value.month, self.birthday.value).date()
+
+            day_left = (next_birthday - today)
+            return day_left
+        else:
+            return None
+
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        birthday_info = f", Birthday: {self.birthday.value}" if self.birthday else ""
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}{birthday_info}"
+
+
+class Birthday(Field):
+    def __init__(self, value):
+        super().__init__(value)
+        self.value = value
+
+    @Field.value.setter
+    def value(self, new_value):
+        try:
+            datetime.strptime(new_value, "%Y-%m-%d")
+            self._value = new_value
+        except ValueError:
+            raise ValueError("Invalid birthday format. Use 'YYYY-MM-DD'.")
+
+    def __str__(self):
+        return f"Birthday: {self.value}"
 
 
 class AddressBook(UserDict):
+
+    def __iter__(self, chunk_size=1):
+        self._chunk_size = chunk_size
+        self._keys = list(self.data.keys())
+        self._index = 0
+        return self
+
+    def __next__(self):
+        if self._index >= len(self._keys):
+            raise StopIteration
+
+        keys_chunk = self._keys[self._index:self._index+self._chunk_size]
+        records_chunk = [self.data[key] for key in keys_chunk]
+        self._index += self._chunk_size
+        return records_chunk
+
     def add_record(self, record):
         self.data[record.name.value] = record
 
