@@ -1,5 +1,7 @@
 from collections import UserDict
 from datetime import datetime
+import pickle
+
 
 class Field:
     def __init__(self, value):
@@ -141,4 +143,30 @@ class AddressBook(UserDict):
     def find(self, name):
         return self.data.get(name, None)
 
+    def save_to_file(self, file_name):
+        with open(file_name, "wb") as file:
+            pickle.dump(self.data, file)
 
+    def load_from_file(self, file_name):
+        try:
+            with open(file_name, "rb") as file:
+                self.data = pickle.load(file)
+        except FileNotFoundError:
+            print("File not found")
+        except Exception as e:
+            print(f"Error when downloading data from a file: {e}")
+
+    def search(self, query):
+        results = []
+        for record in self.data.values():
+            for phone in record.phones:
+                if query in phone.value:
+                    results.append(record)
+                    break
+
+        for record in self.data.values():
+            if query.lower() in record.name.value.lower():
+                if record not in results:
+                    results.append(record)
+
+        return results
